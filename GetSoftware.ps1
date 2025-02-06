@@ -30,3 +30,10 @@ if (Test-Path $outputPath) {
 
 # Start the installer process
 Start-Process $outputPath
+
+Write-Output "Downloading Github Desktop"
+Start-BitsTransfer -Source https://central.github.com/deployments/desktop/desktop/latest/win32 -Destination $cwd\GithubDesktop.exe
+Write-Output "Starting Installer for Github!"
+Start-Process $cwd\GithubDesktop.exe
+
+
