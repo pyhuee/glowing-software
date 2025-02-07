@@ -1,39 +1,75 @@
-# can you fetch the current working directory, and set the output path to the current working directory?
+Write-Host "COOL STUFF GETTIN INSTALLED!!!"
 $cwd = Get-Location
 
 # Ensure TLS 1.2 for secure connection
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# Fetch the latest release JSON from GitHub API
-$release = Invoke-RestMethod -Uri "https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest"
+# Define GitHub tools to download (Name, Repo, FilePattern)
+$githubTools = @(
+    @{
+        Name = "Obsidian"
+        Repo = "obsidianmd/obsidian-releases"
+        FilePattern = "Obsidian-*.exe"
+        InstallArgs = "/S"
+    },
+    @{
+        Name = "yt-dlp" 
+        Repo = "yt-dlp/yt-dlp"
+        FilePattern = "yt-dlp.exe"
+        InstallArgs = $null  # No installation needed
+    }
+)
 
-# Find the Windows .exe installer in the assets
-$exeAsset = $release.assets | Where-Object { $_.name -like "Obsidian-*.exe" }
+# Download GitHub-hosted tools
+foreach ($tool in $githubTools) {
+    Write-Output "`n=== Processing $($tool.Name) ==="
+    
+    # Get latest release
+    $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$($tool.Repo)/releases/latest"
+    
+    # Find matching asset
+    $asset = $release.assets | Where-Object { $_.name -like $tool.FilePattern }
+    
+    if (-not $asset) {
+        Write-Warning "No $($tool.Name) installer found!"
+        continue
+    }
 
-if (-not $exeAsset) {
-    Write-Error "No Windows installer found in the latest release."
-    exit 1
+    # Download file
+    $outputPath = "$cwd\$($asset.name)"
+    Write-Output "Downloading $($asset.name)..."
+    Start-BitsTransfer -Source $asset.browser_download_url -Destination $outputPath
+
+    if (Test-Path $outputPath) {
+        Write-Output "Download successful: $outputPath"
+        
+        # Run installer if needed
+        if ($tool.InstallArgs) {
+            Write-Output "Starting installation..."
+            Start-Process $outputPath -ArgumentList $tool.InstallArgs -Wait
+        }
+    } else {
+        Write-Warning "Failed to download $($tool.Name)"
+    }
 }
 
-# Define the output path for the downloaded file
-$outputPath = "$cwd\$($exeAsset.name)"
-
-# Use BITS to download the file
-Start-BitsTransfer -Source $exeAsset.browser_download_url -Destination $outputPath
-
-# Check if the download was successful
-if (Test-Path $outputPath) {
-    Write-Output "Success! Downloaded latest Obsidian installer to: $outputPath"
-} else {
-    Write-Error "Download failed. Please check your network connection or try again."
+# Download GitHub Desktop (non-GitHub API)
+Write-Output "`n=== Downloading GitHub Desktop ==="
+$ghdPath = "$cwd\GithubDesktop.exe"
+Start-BitsTransfer -Source "https://central.github.com/deployments/desktop/desktop/latest/win32" -Destination $ghdPath
+if (Test-Path $ghdPath) {
+    Write-Output "Starting GitHub Desktop installer..."
+    Start-Process $ghdPath
 }
 
-# Start the installer process
-Start-Process $outputPath
+# Download VS Code
+Write-Output "`n=== Downloading VS Code ===" 
+$vscodePath = "$cwd\VSCode.exe"
+$vscodeUrl = "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user"
+Start-BitsTransfer -Source $vscodeUrl -Destination $vscodePath
+if (Test-Path $vscodePath) {
+    Write-Output "Installing VS Code silently..."
+    Start-Process $vscodePath -ArgumentList "/SILENT","/CURRENTUSER" -Wait
+}
 
-Write-Output "Downloading Github Desktop"
-Start-BitsTransfer -Source https://central.github.com/deployments/desktop/desktop/latest/win32 -Destination $cwd\GithubDesktop.exe
-Write-Output "Starting Installer for Github!"
-Start-Process $cwd\GithubDesktop.exe
-
-
+Write-Host "`nALL AWESOME TOOLS ACQUIRED! "
