@@ -1,3 +1,5 @@
+Write-Host "COOL STUFF GETTIN INSTALLED!!!"
+Write-Host "💖💗🥰😍😻💓💞💘❣️💖💗🥰😍😻💓💞💘❣️"
 # can you fetch the current working directory, and set the output path to the current working directory?
 $cwd = Get-Location
 
@@ -28,12 +30,17 @@ if (Test-Path $outputPath) {
     Write-Error "Download failed. Please check your network connection or try again."
 }
 
-# Start the installer process
-Start-Process $outputPath
+# Start the installer process (for obsidian)
+Start-Process $outputPath -ArgumentList "/S" #installs silently 😃
 
+
+# Getting Github
 Write-Output "Downloading Github Desktop"
 Start-BitsTransfer -Source https://central.github.com/deployments/desktop/desktop/latest/win32 -Destination $cwd\GithubDesktop.exe
 Write-Output "Starting Installer for Github!"
 Start-Process $cwd\GithubDesktop.exe
 
-
+# Getting VS Code https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user
+Write-Output "Fetching VS Code"
+Start-BitsTransfer -Source https://code.visualstudio.com/sha/download?build=stable"&"os=win32-x64-user -Destination $cwd\VSCode.exe
+Start-Process $cwd\VSCode.exe -ArgumentList "/silent","/currentuser"
