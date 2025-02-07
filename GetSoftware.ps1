@@ -1,5 +1,4 @@
 Write-Host "COOL STUFF GETTIN INSTALLED!!!"
-Write-Host "💖💗🥰😍😻💓💞💘❣️💖💗🥰😍😻💓💞💘❣️"
 # can you fetch the current working directory, and set the output path to the current working directory?
 $cwd = Get-Location
 
