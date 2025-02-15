@@ -73,3 +73,8 @@ if (Test-Path $vscodePath) {
 }
 
 Write-Host "`nALL AWESOME TOOLS ACQUIRED! "
+
+# Direct users to request new software
+Write-Host "`nIf you would like to request new software to be installed, please visit:"
+Write-Host "GitHub Repository: https://github.com/pyhuee/glowing-software"
+Write-Host "Google Form: https://forms.gle/76oFEi1svFKEZy5p9"
